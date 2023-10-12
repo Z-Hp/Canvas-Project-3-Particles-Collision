@@ -40,28 +40,39 @@ function randomColor(colors) {
 }
 
 // Object
-function Particle(x, y, dy, radius, color) {
+function Particle(x, y, radius, color) {
   this.x = x;
   this.y = y;
-  this.dy = dy;
   this.radius = radius;
   this.color = color;
 
-  this.update = function () {
-    this.draw = function () {
-      c.beginPath();
-      c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-      c.fillStyle = this.color;
-      c.fill();
-      // c.stroke();
-      c.closePath();
-    };
+  this.update = () => {
+    this.draw();
+  };
+
+  this.draw = function () {
+    c.beginPath();
+    c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+    c.fillStyle = this.color;
+    c.fill();
+    // c.stroke();
+    c.closePath();
   };
 }
 
 // Implementation
+let particles;
 
-function init() {}
+function init() {
+  particles = [];
+  for (let i = 0; i < 400; i++) {
+    const x = Math.random() * innerWidth;
+    const y = Math.random() * innerHeight;
+    const radius = 10;
+    const color = "blue";
+    particles.push(new Particle(x, y, radius, color));
+  }
+}
 
 // Animation Loop
 function animate() {
@@ -69,9 +80,9 @@ function animate() {
 
   c.clearRect(0, 0, canvas.width, canvas.height);
 
-  for (var i = 0; i < ballArray.length; i++) {
-    ballArray[i].update();
-  }
+  particles.forEach((Particle) => {
+    Particle.update();
+  });
 }
 init();
 animate();
