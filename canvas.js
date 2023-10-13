@@ -12,7 +12,9 @@ var mouse = {
   y: innerHeight / 2,
 };
 
-var colors = ["#F20F79", "#04BFBF", "#F2B90C", "#8C4E03", "#F25C05"];
+// color palette 1 : "#F20F79", "#04BFBF", "#F2B90C", "#8C4E03", "#F25C05"
+// color palette 2 : "#2185C5", "#7ECEFD", "FF7F66"
+var colors = ["#04BFBF", "#8C4E03", "#F20F79"];
 
 // Event Listeners
 addEventListener("mousemove", function (event) {
@@ -122,6 +124,7 @@ function Particle(x, y, radius, color) {
 
   this.radius = radius;
   this.color = color;
+  this.opacity = 0;
   this.mass = 1;
 
   this.update = (particles) => {
@@ -146,6 +149,17 @@ function Particle(x, y, radius, color) {
       this.velocity.y = -this.velocity.y;
     }
 
+    // mouse collision detection
+    if (
+      distance(mouse.x, mouse.y, this.x, this.y) < 120 &&
+      this.opacity < 0.2
+    ) {
+      this.opacity += 0.02;
+    } else if (this.opacity > 0) {
+      this.opacity -= 0.02;
+      this.opacity = Math.max(0, this.opacity);
+    }
+
     this.x += this.velocity.x;
     this.y += this.velocity.y;
   };
@@ -153,9 +167,14 @@ function Particle(x, y, radius, color) {
   this.draw = () => {
     c.beginPath();
     c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+    c.save();
+    c.globalAlpha = this.opacity;
+    c.fillStyle = this.color;
+    c.fill();
+    c.restore();
     c.strokeStyle = this.color;
-    //c.fill();
     c.stroke();
+
     c.closePath();
   };
 }
@@ -165,12 +184,12 @@ let particles;
 
 function init() {
   particles = [];
-  for (let i = 0; i < 4; i++) {
-    const radius = 80;
+  for (let i = 0; i < 300; i++) {
+    const radius = 15;
     let x = randomIntFromRange(radius, canvas.width - radius);
     let y = randomIntFromRange(radius, canvas.height - radius);
 
-    const color = "blue";
+    const color = randomColor(colors);
 
     if (i !== 0) {
       for (let j = 0; j < particles.length; j++) {
