@@ -1,3 +1,4 @@
+// Until 22 min
 // Initial Setup
 var canvas = document.querySelector("canvas");
 var c = canvas.getContext("2d");
@@ -46,6 +47,69 @@ function distance(x1, y1, x2, y2) {
   return Math.sqrt(Math.pow(xDist, 2) + Math.pow(yDist, 2));
 }
 
+function rotate(velocity, angle) {
+  const rotateVelocities = {
+    x: velocity.x * Math.cos(angle) - velocity.y * Math.sin(angle),
+    y: velocity.x * Math.sin(angle) + velocity.y * Math.cos(angle),
+  };
+  return rotateVelocities;
+}
+
+/**
+ * Swaps out two cooloding particles' x and y velocities after running through
+ * an elastic collision reaction equation
+ *
+ * @param Object | particle    | A particle object with x and y coordinates, plus velocity
+ * @param Object | otherparticle    | A particle object with x and y coordinates, plus velocity
+ * @return Null | Dose not return a value
+ */
+
+function resolveCollision(particle, otherparticle) {
+  const xVelocityDiff = particle.velocity.x - otherparticle.velocity.x;
+  const yVelocityDiff = particle.velocity.y - otherparticle.velocity.y;
+
+  const xDist = otherparticle.x - particle.x;
+  const yDist = otherparticle.y - particle.y;
+
+  // Prevent accidental overlap of particle
+  if (xVelocityDiff * xDist + yVelocityDiff * yDist >= 0) {
+    // Grab angle between two colliding particle
+    const angle = -Math.atan2(
+      otherparticle.y - particle.y,
+      otherparticle.x - particle.x
+    );
+
+    // Store mass in var for better readability collision equation
+    const m1 = particle.mass;
+    const m2 = otherparticle.mass;
+
+    // Velocity before equation
+    const u1 = rotate(particle.velocity, angle);
+    const u2 = rotate(otherparticle.velocity, angle);
+
+    // Velocity after 1d collision equation
+    const v1 = {
+      x: (u1.x * (m1 - m2)) / (m1 + m2) + (u2.x * 2 * m2) / (m1 + m2),
+      y: u1.y,
+    };
+    const v2 = {
+      x: (u2.x * (m1 - m2)) / (m1 + m2) + (u1.x * 2 * m2) / (m1 + m2),
+      y: u2.y,
+    };
+
+    // Final velocity after rotating axis back to original location
+    const vFinal1 = rotate(v1, -angle);
+    const vFinal2 = rotate(v2, -angle);
+
+    // Swap particle velocity for realistic bounce effect
+    particle.velocity.x = vFinal1.x;
+    particle.velocity.y = vFinal1.y;
+
+    otherparticle.velocity.x = vFinal2.x;
+    otherparticle.velocity.y = vFinal2.y;
+  }
+}
+
 // Object
 function Particle(x, y, radius, color) {
   this.x = x;
@@ -58,6 +122,7 @@ function Particle(x, y, radius, color) {
 
   this.radius = radius;
   this.color = color;
+  this.mass = 1;
 
   this.update = (particles) => {
     this.draw();
@@ -69,7 +134,7 @@ function Particle(x, y, radius, color) {
           this.radius * 2 <
         0
       ) {
-        console.log("has collided");
+        resolveCollision(this, particles[i]);
       }
     }
 
